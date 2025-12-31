@@ -105,7 +105,15 @@ def sequential_research(data: JurnalRequest):
         
         # Pakai model yang agak pinteran dikit kalau ada (atau flash juga oke)
         hasil_step_3 = panggil_gemini('gemini-2.5-flash', prompt_editor)
-
+        google_widget_html = ""
+        try:
+            # Cek apakah Step 1 punya metadata grounding
+            if hasattr(hasil_step_1, 'candidates') and hasil_step_1.candidates:
+                cand = hasil_step_1.candidates[0]
+                if hasattr(cand, 'grounding_metadata') and cand.grounding_metadata.search_entry_point:
+                    google_widget_html = cand.grounding_metadata.search_entry_point.rendered_content
+        except Exception as e:
+            print(f"Gagal ambil widget grounding: {e}")
         # ---------------------------------------------------------
         # FINAL OUTPUT
         # ---------------------------------------------------------
@@ -116,7 +124,8 @@ def sequential_research(data: JurnalRequest):
                 "2_draft_awal": hasil_step_2.text[:200] + "..."
             },
             "hasil_final": hasil_step_3.text, # Ini yang dipake di web kamu
-            "sumber": sumber_validasi
+            "sumber_html": google_widget_html
+            
         }
 
     except Exception as e:
